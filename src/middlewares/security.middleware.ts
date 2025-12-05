@@ -8,18 +8,25 @@ import xssClean from "xss-clean";
 import rateLimit from "express-rate-limit";
 
 export const applySecurityMiddlewares = (app: Express) => {
-  // Trust proxy for secure cookies behind Vercel / proxies
+  // behind vercel/nginx: allow secure cookies
   app.set("trust proxy", 1);
 
-  // Basic security headers
-  app.use(helmet());
+  // Helmet with minimal CSP to avoid conflicts with frontend
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    })
+  );
 
-  // CORS – only allowed origin
-  const allowedOrigin = process.env.FRONTEND_ORIGIN || "*";
+  // CORS – ENV driven for best deployment flexibility
+  const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "*")
+    .split(",")
+    .map((o) => o.trim());
 
   app.use(
     cors({
-      origin: allowedOrigin,
+      origin: allowedOrigins,
       credentials: true,
     })
   );
@@ -27,16 +34,19 @@ export const applySecurityMiddlewares = (app: Express) => {
   // Prevent HTTP parameter pollution
   app.use(hpp());
 
-  // NoSQL injection guard for Mongo
+  // Sanitize against NoSQL Injection
   app.use(mongoSanitize());
 
-  // XSS basic protection
+  // Basic XSS defense
   app.use(xssClean());
 
-  // Generic rate limit (per IP)
+  // Global rate limiting
   const globalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // 200 requests / 15 min
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"), // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_MAX || "300"), // 300 requests/15min
+    message: {
+      message: "Too many requests, slow down.",
+    },
     standardHeaders: true,
     legacyHeaders: false,
   });
