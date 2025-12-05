@@ -1,0 +1,43 @@
+{
+  "name": "gec-attendance-backend",
+  "version": "2.0.0",
+  "description": "Secure Attendance Backend for GEC Banka with Azure Integration",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.2.0",
+    "@microsoft/microsoft-graph-client": "^3.0.5",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.1",
+    "validator": "^13.11.0",
+    "xss-clean": "^0.1.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/multer": "^1.4.7",
+    "@types/node": "^20.12.12",
+    "@types/cors": "^2.8.17",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  }
+}
