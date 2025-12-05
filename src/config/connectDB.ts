@@ -1,25 +1,32 @@
 // Path: src/config/connectDB.ts
 import mongoose from "mongoose";
 
-const MONGO_URI = process.env.MONGO_URI as string;
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
 if (!MONGO_URI) {
-  throw new Error("❌ MONGO_URI is not set in environment variables");
+  console.warn(
+    "⚠️  MONGO_URI / MONGODB_URI not set. Database connection will fail."
+  );
 }
 
-// Vercel / serverless friendly connection reuse
-let isConnected = 0; // 0 = not connected, 1 = connected
+let isConnected = false;
 
-export const connectDB = async (): Promise<void> => {
+/**
+ * Connect to MongoDB (safe for Vercel/serverless)
+ */
+const connectDB = async (): Promise<void> => {
   if (isConnected) return;
 
   try {
-    const conn = await mongoose.connect(MONGO_URI, {
-      // Add options here if needed
+    const conn = await mongoose.connect(MONGO_URI as string, {
+      // options mostly inferred in Mongoose 8
     });
 
-    isConnected = conn.connections[0].readyState;
-    console.log("✅ MongoDB connected");
+    isConnected = conn.connection.readyState === 1;
+
+    console.log(
+      `✅ MongoDB connected: ${conn.connection.host}/${conn.connection.name}`
+    );
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
     throw error;
