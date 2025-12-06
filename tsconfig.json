@@ -1,4 +1,3 @@
-// Path: tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -15,7 +14,9 @@
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+
+    "lib": ["ES2020", "DOM"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
