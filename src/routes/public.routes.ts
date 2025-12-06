@@ -2,14 +2,14 @@
 import { Router } from "express";
 import { getLastUpdateController } from "../controllers/public.controller";
 
-const router = Router();
+const publicRoutes = Router();
 
 // Health check
-router.get("/ping", (_req, res) => {
+publicRoutes.get("/ping", (_req, res) => {
   res.status(200).json({ message: "pong" });
 });
 
 // Last attendance update timestamp
-router.get("/last-update", getLastUpdateController);
+publicRoutes.get("/last-update", getLastUpdateController);
 
-export default router;
+export default publicRoutes;
