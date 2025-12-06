@@ -1,6 +1,7 @@
 // Path: src/routes/admin.routes.ts
 import { Router } from "express";
 import authMiddleware, { authorize } from "../middlewares/authMiddleware";
+import verifySecretHeader from "../middlewares/secretHeader.middleware";
 import {
   addHolidayController,
   revertLastUploadsController,
@@ -12,7 +13,10 @@ import {
 
 const adminRoutes = Router();
 
-// Every route here: only ADMIN
+// 🔐 Extra safety: only requests with correct x-internal-secret
+adminRoutes.use(verifySecretHeader);
+
+// 👮 Every route here: only ADMIN
 adminRoutes.use(authMiddleware, authorize("ADMIN"));
 
 // --- Holiday Management ---
