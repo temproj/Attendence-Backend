@@ -1,7 +1,12 @@
 // Path: src/routes/user.routes.ts
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
 import authMiddleware from "../middlewares/authMiddleware";
+import verifySecretHeader from "../middlewares/secretHeader.middleware";
+import {
+  loginLimiter,
+  otpLimiter,
+  forgotPasswordLimiter,
+} from "../middlewares/rateLimiter.middleware";
 import {
   loginUserController,
   logoutUserController,
@@ -9,46 +14,58 @@ import {
   verifyOtpController,
   forgotPasswordController,
   resetPasswordController,
-  // registerUserController, // <- abhi implement nahi, isliye use nahi kar rahe
+  // registerUserController, // future ke liye
 } from "../controllers/user.controller";
 
-const router = Router();
+const userRoutes = Router();
 
-// 🔒 Auth endpoints pe stricter limiter
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 20, // 20 attempts / 15 min
-  message: { message: "Too many requests, please try again later." },
-});
+// 🔐 Sab auth-related routes sirf tumhare frontend se
+userRoutes.use(verifySecretHeader);
 
-// --- Auth routes ---
+// --- AUTH ROUTES ---
 
 // NOTE: students khud register nahi karte – future me admin tool ke liye bana sakte
-// router.post("/register", authLimiter, registerUserController);
+// userRoutes.post("/register", loginLimiter, registerUserController);
 
-router.post("/login", authLimiter, loginUserController);
-router.post("/logout", authMiddleware, logoutUserController);
+// Login – IP based brute-force protection
+userRoutes.post("/login", loginLimiter, loginUserController);
 
-router.post(
+// Logout – sirf valid auth wale
+userRoutes.post("/logout", authMiddleware, logoutUserController);
+
+// Post-login OTP generate
+userRoutes.post(
   "/post-login/otp/generate",
   authMiddleware,
-  authLimiter,
+  otpLimiter,
   generateOtpController
 );
-router.post(
+
+// Post-login OTP verify
+userRoutes.post(
   "/post-login/otp/verify",
   authMiddleware,
-  authLimiter,
+  otpLimiter,
   verifyOtpController
 );
 
-router.post("/password/forgot", authLimiter, forgotPasswordController);
-router.post("/password/reset", authLimiter, resetPasswordController);
+// Forgot password – enumeration + abuse safe
+userRoutes.post(
+  "/password/forgot",
+  forgotPasswordLimiter,
+  forgotPasswordController
+);
+
+// Reset password – same limiter, OTP + new pass
+userRoutes.post(
+  "/password/reset",
+  forgotPasswordLimiter,
+  resetPasswordController
+);
 
 // Simple "me" route
-router.get("/me", authMiddleware, (req, res) => {
-  // @ts-ignore
+userRoutes.get("/me", authMiddleware, (req, res) => {
   res.json({ message: "OK", user: req.user });
 });
 
-export default router;
+export default userRoutes;
