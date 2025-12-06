@@ -1,7 +1,7 @@
 // Path: src/index.ts
 import "dotenv/config";
-import app from "./app.js";
-import connectDB from "./config/connectDB.js";
+import app from "./app";
+import connectDB from "./config/connectDB";
 
 const PORT = process.env.PORT || 3000;
 
